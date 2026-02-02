@@ -2,6 +2,12 @@
 
 Comprehensive OpenAPI 3.1.0 specification and AsyncAPI 3.0.0 documentation for the Hyperliquid DEX API.
 
+## 🌐 Live Documentation
+
+**View the interactive documentation**: [https://bowen31337.github.io/hyperliquid-openapi/](https://bowen31337.github.io/hyperliquid-openapi/)
+
+**GitHub Repository**: [https://github.com/bowen31337/hyperliquid-openapi](https://github.com/bowen31337/hyperliquid-openapi)
+
 ## 📚 Documentation
 
 This repository contains complete API documentation for Hyperliquid, including:
