@@ -4,9 +4,13 @@ Comprehensive OpenAPI 3.1.0 specification and AsyncAPI 3.0.0 documentation for t
 
 ## 🌐 Live Documentation
 
-**View the interactive documentation**: [https://bowen31337.github.io/hyperliquid-openapi/](https://bowen31337.github.io/hyperliquid-openapi/)
+**🏠 Home**: [https://bowen31337.github.io/hyperliquid-openapi/landing.html](https://bowen31337.github.io/hyperliquid-openapi/landing.html)
 
-**GitHub Repository**: [https://github.com/bowen31337/hyperliquid-openapi](https://github.com/bowen31337/hyperliquid-openapi)
+**📖 Redoc**: [https://bowen31337.github.io/hyperliquid-openapi/](https://bowen31337.github.io/hyperliquid-openapi/)
+
+**🔧 Swagger UI**: [https://bowen31337.github.io/hyperliquid-openapi/swagger.html](https://bowen31337.github.io/hyperliquid-openapi/swagger.html)
+
+**💻 GitHub Repository**: [https://github.com/bowen31337/hyperliquid-openapi](https://github.com/bowen31337/hyperliquid-openapi)
 
 ## 📚 Documentation
 
@@ -14,7 +18,10 @@ This repository contains complete API documentation for Hyperliquid, including:
 
 - **REST API**: Complete OpenAPI 3.1.0 specification with all endpoints
 - **WebSocket API**: AsyncAPI 3.0.0 specification for real-time data streaming
-- **Interactive Documentation**: Redoc-powered beautiful API documentation
+- **Interactive Documentation**: 
+  - **Redoc**: Beautiful, responsive documentation with advanced search
+  - **Swagger UI**: Interactive API explorer with "Try it out" functionality
+- **Automated Deployment**: GitHub Actions for continuous deployment
 
 ## 🚀 Quick Start
 
