@@ -1,0 +1,41 @@
+{
+  "name": "hyperliquid-openapi",
+  "version": "1.0.0",
+  "description": "Comprehensive OpenAPI and AsyncAPI documentation for Hyperliquid DEX",
+  "main": "index.html",
+  "scripts": {
+    "start": "npx http-server -p 8080 -o",
+    "validate": "npx @redocly/cli lint openapi.yaml",
+    "validate:asyncapi": "npx @asyncapi/cli validate websocket-api.yaml",
+    "bundle": "npx @redocly/cli bundle openapi.yaml -o openapi-bundle.yaml",
+    "build:redoc": "npx @redocly/cli build-docs openapi.yaml -o docs/index.html",
+    "preview": "npx @redocly/cli preview-docs openapi.yaml"
+  },
+  "keywords": [
+    "hyperliquid",
+    "openapi",
+    "asyncapi",
+    "api",
+    "documentation",
+    "dex",
+    "perpetual",
+    "spot",
+    "trading",
+    "cryptocurrency"
+  ],
+  "author": "Hyperliquid Community",
+  "license": "MIT",
+  "devDependencies": {
+    "@redocly/cli": "^1.25.14",
+    "@asyncapi/cli": "^2.14.0",
+    "http-server": "^14.1.1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/yourusername/hyperliquid-openapi"
+  },
+  "bugs": {
+    "url": "https://github.com/yourusername/hyperliquid-openapi/issues"
+  },
+  "homepage": "https://github.com/yourusername/hyperliquid-openapi#readme"
+}
