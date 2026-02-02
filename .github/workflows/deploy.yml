@@ -47,6 +47,8 @@ jobs:
           # Copy all documentation files
           cp index.html docs/
           cp swagger.html docs/
+          cp api-tester.html docs/
+          cp landing.html docs/
           cp openapi.yaml docs/
           cp websocket-api.yaml docs/
           cp README.md docs/

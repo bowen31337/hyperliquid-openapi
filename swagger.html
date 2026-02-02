@@ -103,11 +103,11 @@
         <h1>🚀 Hyperliquid API - Swagger UI</h1>
         <p>Interactive API documentation with "Try it out" functionality</p>
         <div class="links">
-            <a href="index.html">📖 View Redoc</a>
+            <a href="index.html">📖 Redoc</a>
+            <a href="api-tester.html">🧪 API Tester</a>
             <a href="landing.html">🏠 Home</a>
-            <a href="openapi.yaml" download>📥 Download OpenAPI Spec</a>
+            <a href="openapi.yaml" download>📥 Download Spec</a>
             <a href="https://github.com/bowen31337/hyperliquid-openapi" target="_blank">💻 GitHub</a>
-            <a href="https://hyperliquid.gitbook.io/hyperliquid-docs" target="_blank">📚 Official Docs</a>
         </div>
     </div>
     
@@ -149,10 +149,86 @@
                 displayRequestDuration: true,
                 tagsSorter: 'alpha',
                 operationsSorter: 'alpha',
-                validatorUrl: null
+                validatorUrl: null,
+                // Enable CORS for testing
+                requestInterceptor: (request) => {
+                    // Add CORS headers
+                    request.headers['Content-Type'] = 'application/json';
+                    
+                    // Log request for debugging
+                    console.log('API Request:', {
+                        url: request.url,
+                        method: request.method,
+                        headers: request.headers,
+                        body: request.body
+                    });
+                    
+                    return request;
+                },
+                responseInterceptor: (response) => {
+                    // Log response for debugging
+                    console.log('API Response:', {
+                        url: response.url,
+                        status: response.status,
+                        body: response.body
+                    });
+                    
+                    return response;
+                }
             });
             
             window.ui = ui;
+            
+            // Add helper information banner
+            setTimeout(() => {
+                const infoDiv = document.createElement('div');
+                infoDiv.style.cssText = `
+                    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                    color: white;
+                    padding: 20px;
+                    margin: 20px;
+                    border-radius: 10px;
+                    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+                `;
+                infoDiv.innerHTML = `
+                    <h3 style="margin: 0 0 15px 0; font-size: 1.3rem;">🚀 Interactive API Testing</h3>
+                    <p style="margin: 0 0 15px 0; line-height: 1.6;">
+                        You can now test Hyperliquid API endpoints directly from this page! 
+                        Click "Try it out" on any endpoint to execute real API calls.
+                    </p>
+                    <div style="background: rgba(255,255,255,0.1); padding: 15px; border-radius: 8px; margin-top: 15px;">
+                        <h4 style="margin: 0 0 10px 0; font-size: 1.1rem;">📖 Quick Guide:</h4>
+                        <ul style="margin: 0; padding-left: 20px; line-height: 1.8;">
+                            <li><strong>Public Endpoints</strong> (Info): No authentication needed - test immediately!</li>
+                            <li><strong>Trading Endpoints</strong> (Exchange): Requires EIP-712 signature in request body</li>
+                            <li><strong>Network Selection</strong>: Use the "Servers" dropdown to switch between Mainnet/Testnet</li>
+                            <li><strong>Examples</strong>: Pre-filled examples are provided for each endpoint</li>
+                        </ul>
+                    </div>
+                    <div style="background: rgba(255,255,255,0.1); padding: 15px; border-radius: 8px; margin-top: 15px;">
+                        <h4 style="margin: 0 0 10px 0; font-size: 1.1rem;">⚠️ Trading Operations:</h4>
+                        <p style="margin: 0; line-height: 1.6;">
+                            Trading operations require proper EIP-712 signatures. For production trading, use the 
+                            <a href="https://github.com/hyperliquid-dex/hyperliquid-python-sdk" target="_blank" style="color: white; text-decoration: underline;">official SDKs</a>
+                            which handle signing automatically.
+                        </p>
+                    </div>
+                    <div style="background: rgba(255,255,255,0.1); padding: 15px; border-radius: 8px; margin-top: 15px;">
+                        <h4 style="margin: 0 0 10px 0; font-size: 1.1rem;">🔧 Try These Examples:</h4>
+                        <ul style="margin: 0; padding-left: 20px; line-height: 1.8;">
+                            <li><strong>Get All Mid Prices</strong>: POST /info with {"type": "allMids"}</li>
+                            <li><strong>Get L2 Order Book</strong>: POST /info with {"type": "l2Book", "coin": "BTC"}</li>
+                            <li><strong>Get User Orders</strong>: POST /info with {"type": "openOrders", "user": "0x..."}</li>
+                            <li><strong>Get Candles</strong>: POST /info with candleSnapshot request</li>
+                        </ul>
+                    </div>
+                `;
+                
+                const container = document.querySelector('#swagger-ui');
+                if (container && container.firstChild) {
+                    container.insertBefore(infoDiv, container.firstChild);
+                }
+            }, 1000);
         };
     </script>
 </body>
