@@ -68,7 +68,7 @@ tags:
 paths:
   /info:
     post:
-      tags: [Info]
+      tags: [Info, Market Data, Orders, Account, Staking]
       summary: Query information endpoint
       description: |
         Unified endpoint for querying various types of information. The request body `type` field determines what data is returned.
@@ -87,6 +87,7 @@ paths:
               oneOf:
                 - $ref: '#/components/schemas/AllMidsRequest'
                 - $ref: '#/components/schemas/OpenOrdersRequest'
+                - $ref: '#/components/schemas/FrontendOpenOrdersRequest'
                 - $ref: '#/components/schemas/UserFillsRequest'
                 - $ref: '#/components/schemas/UserFillsByTimeRequest'
                 - $ref: '#/components/schemas/OrderStatusRequest'
@@ -94,6 +95,15 @@ paths:
                 - $ref: '#/components/schemas/CandleSnapshotRequest'
                 - $ref: '#/components/schemas/MetaRequest'
                 - $ref: '#/components/schemas/UserStateRequest'
+                - $ref: '#/components/schemas/UserRateLimitRequest'
+                - $ref: '#/components/schemas/HistoricalOrdersRequest'
+                - $ref: '#/components/schemas/SubAccountsRequest'
+                - $ref: '#/components/schemas/VaultDetailsRequest'
+                - $ref: '#/components/schemas/UserRoleRequest'
+                - $ref: '#/components/schemas/PortfolioRequest'
+                - $ref: '#/components/schemas/ReferralRequest'
+                - $ref: '#/components/schemas/UserFeesRequest'
+                - $ref: '#/components/schemas/DelegationsRequest'
             examples:
               allMids:
                 summary: Get all mid prices
@@ -142,7 +152,7 @@ paths:
 
   /exchange:
     post:
-      tags: [Exchange]
+      tags: [Exchange, Orders, Account, Staking, Vault]
       summary: Execute exchange operations
       description: |
         Unified endpoint for all trading and account operations. Requires EIP-712 signature for authentication.
@@ -161,9 +171,11 @@ paths:
               oneOf:
                 - $ref: '#/components/schemas/PlaceOrderRequest'
                 - $ref: '#/components/schemas/CancelOrderRequest'
+                - $ref: '#/components/schemas/CancelByCloidRequest'
                 - $ref: '#/components/schemas/ModifyOrderRequest'
                 - $ref: '#/components/schemas/UpdateLeverageRequest'
                 - $ref: '#/components/schemas/UsdTransferRequest'
+                - $ref: '#/components/schemas/TwapOrderRequest'
             examples:
               placeOrder:
                 summary: Place a limit order

@@ -52,10 +52,13 @@ The API Tester has been **fully integrated** into the Swagger UI page, creating 
 ℹ️ Get Market Metadata
 💱 Get Spot Metadata
 📋 Get User's Open Orders
+📤 Place Order (requires wallet)
+❌ Cancel Order (requires wallet)
 ```
-- 6 pre-built examples
+- 8 pre-built examples including trading (place/cancel order)
 - One-click loading
 - Auto-fills request body
+- Trading examples require wallet connection and EIP-712 signing
 
 #### 4. Example Cards
 - Visual grid of common examples
@@ -73,6 +76,13 @@ The API Tester has been **fully integrated** into the Swagger UI page, creating 
 #### 6. Keyboard Shortcuts
 - **Ctrl+Enter**: Send request
 - Faster workflow for power users
+
+#### 7. Wallet Authentication (Trading)
+- **Connect Wallet** button for MetaMask / Web3 wallet
+- EIP-712 signing for `POST /exchange` (place order, cancel order, etc.)
+- Network validation and auto-switch for Arbitrum One (Mainnet) and Arbitrum Sepolia (Testnet)
+- Private keys never leave the wallet; user approves each signature
+- Quick Tester and Swagger "Try it out" both sign exchange requests when wallet is connected
 
 ---
 

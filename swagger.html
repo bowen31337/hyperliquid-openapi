@@ -10,6 +10,10 @@
     <!-- Swagger UI CSS -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swagger-ui-dist@5.11.0/swagger-ui.css">
     
+    <!-- Web3 Libraries -->
+    <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@msgpack/msgpack@2.8.0/dist.es5+umd/msgpack.min.js"></script>
+    
     <style>
         body {
             margin: 0;
@@ -291,6 +295,111 @@
             font-size: 14px;
             line-height: 1.6;
         }
+        
+        /* Wallet Panel Styles */
+        .wallet-panel {
+            max-width: 1460px;
+            margin: 20px auto;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            padding: 20px 25px;
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 20px;
+        }
+        
+        .wallet-panel .wallet-status {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-weight: 600;
+            color: #4a5568;
+        }
+        
+        .wallet-panel .status-indicator {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: #e53e3e;
+        }
+        
+        .wallet-panel .status-indicator.connected {
+            background: #38a169;
+        }
+        
+        .wallet-panel .wallet-btn {
+            padding: 10px 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .wallet-panel .wallet-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(102, 126, 234, 0.3);
+        }
+        
+        .wallet-panel .wallet-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+        
+        .wallet-panel .wallet-info > div {
+            font-size: 13px;
+            color: #2d3748;
+        }
+        
+        .wallet-panel .wallet-info code {
+            background: #edf2f7;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+        }
+        
+        .wallet-panel .wallet-btn-secondary {
+            padding: 8px 16px;
+            background: #e2e8f0;
+            color: #2d3748;
+            border: none;
+            border-radius: 6px;
+            font-size: 13px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        
+        .wallet-panel .wallet-btn-secondary:hover {
+            background: #cbd5e0;
+        }
+        
+        .wallet-banner {
+            max-width: 1460px;
+            margin: 0 auto 15px auto;
+            padding: 15px 20px;
+            border-radius: 8px;
+            font-size: 14px;
+            line-height: 1.6;
+        }
+        
+        .wallet-banner.info {
+            background: #ebf8ff;
+            border-left: 4px solid #4299e1;
+            color: #2c5282;
+        }
+        
+        .wallet-banner.warning {
+            background: #fffaf0;
+            border-left: 4px solid #ed8936;
+            color: #744210;
+        }
     </style>
 </head>
 <body>
@@ -303,6 +412,28 @@
             <a href="landing.html">🏠 Home</a>
             <a href="openapi.yaml" download>📥 Download Spec</a>
             <a href="https://github.com/bowen31337/hyperliquid-openapi" target="_blank">💻 GitHub</a>
+        </div>
+    </div>
+    
+    <!-- Wallet Auth Banners -->
+    <div class="wallet-banner info">
+        <strong>Secure Wallet Authentication</strong> — Your private keys never leave your wallet. You approve each transaction individually. Connect MetaMask (or any WalletConnect-compatible wallet) to test trading endpoints.
+    </div>
+    <div class="wallet-banner warning">
+        <strong>Important:</strong> Ensure you are on the correct network (Arbitrum One for Mainnet, Arbitrum Sepolia for Testnet). Start with small amounts on Testnet. Each order requires wallet approval.
+    </div>
+    
+    <!-- Wallet Connection Panel -->
+    <div class="wallet-panel">
+        <div class="wallet-status" id="walletStatus">
+            <span class="status-indicator disconnected" id="statusIndicator"></span>
+            <span id="statusText">Not Connected</span>
+        </div>
+        <button class="wallet-btn" id="connectWalletBtn">Connect Wallet</button>
+        <div class="wallet-info" id="walletInfo" style="display: none;">
+            <div>Address: <code id="walletAddress"></code></div>
+            <div>Network: <span id="walletNetwork"></span></div>
+            <button class="wallet-btn-secondary" id="disconnectBtn">Disconnect</button>
         </div>
     </div>
     
@@ -337,6 +468,8 @@
                             <option value="meta">ℹ️ Get Market Metadata</option>
                             <option value="spotMeta">💱 Get Spot Metadata</option>
                             <option value="openOrders">📋 Get User's Open Orders</option>
+                            <option value="placeOrder">📤 Place Order (requires wallet)</option>
+                            <option value="cancelOrder">❌ Cancel Order (requires wallet)</option>
                         </select>
                     </div>
                 </div>
@@ -377,6 +510,14 @@
                     <h4>ℹ️ Market Metadata</h4>
                     <pre>{"type": "meta"}</pre>
                 </div>
+                <div class="example-card" onclick="useTesterExample('placeOrder')">
+                    <h4>📤 Place Order (wallet)</h4>
+                    <pre>{"action": {"type": "order", ...}}</pre>
+                </div>
+                <div class="example-card" onclick="useTesterExample('cancelOrder')">
+                    <h4>❌ Cancel Order (wallet)</h4>
+                    <pre>{"action": {"type": "cancel", ...}}</pre>
+                </div>
             </div>
         </div>
     </div>
@@ -388,6 +529,243 @@
     <script src="https://cdn.jsdelivr.net/npm/swagger-ui-dist@5.11.0/swagger-ui-standalone-preset.js"></script>
     
     <script>
+        // Error handler for wallet and signing
+        const ErrorHandler = {
+            handleWalletError(error) {
+                if (error.code === 4001) return 'Transaction rejected by user';
+                if (error.code === -32002) return 'Wallet connection request pending. Please check your wallet.';
+                return error.message || 'Unknown wallet error';
+            },
+            handleSigningError(error) {
+                if (error.message && error.message.includes('User or API Wallet')) {
+                    return "Signature verification failed. Please ensure you're using the correct wallet.";
+                }
+                return error.message || 'Signing failed';
+            }
+        };
+        
+        // Wallet Connection Manager
+        const WalletManager = {
+            provider: null,
+            signer: null,
+            address: null,
+            chainId: null,
+            
+            async connectMetaMask() {
+                if (typeof ethers === 'undefined') {
+                    alert('ethers.js not loaded. Please refresh the page.');
+                    return false;
+                }
+                if (!window.ethereum) {
+                    alert('MetaMask (or another Web3 wallet) not detected. Please install MetaMask.');
+                    return false;
+                }
+                try {
+                    const provider = new ethers.providers.Web3Provider(window.ethereum);
+                    await provider.send('eth_requestAccounts', []);
+                    const signer = provider.getSigner();
+                    const address = await signer.getAddress();
+                    const network = await provider.getNetwork();
+                    this.provider = provider;
+                    this.signer = signer;
+                    this.address = (address || '').toLowerCase();
+                    this.chainId = network.chainId ? parseInt(network.chainId, 10) : null;
+                    this.updateUI();
+                    return true;
+                } catch (error) {
+                    const msg = ErrorHandler.handleWalletError(error);
+                    alert('Failed to connect wallet: ' + msg);
+                    console.error('Wallet connection failed:', error);
+                    return false;
+                }
+            },
+            
+            disconnect() {
+                this.provider = null;
+                this.signer = null;
+                this.address = null;
+                this.chainId = null;
+                this.updateUI();
+            },
+            
+            updateUI() {
+                const statusIndicator = document.getElementById('statusIndicator');
+                const statusText = document.getElementById('statusText');
+                const connectBtn = document.getElementById('connectWalletBtn');
+                const walletInfo = document.getElementById('walletInfo');
+                const walletAddressEl = document.getElementById('walletAddress');
+                const walletNetworkEl = document.getElementById('walletNetwork');
+                
+                if (this.address) {
+                    if (statusIndicator) { statusIndicator.classList.add('connected'); statusIndicator.classList.remove('disconnected'); }
+                    if (statusText) statusText.textContent = 'Connected';
+                    if (connectBtn) connectBtn.style.display = 'none';
+                    if (walletInfo) walletInfo.style.display = 'flex';
+                    if (walletAddressEl) walletAddressEl.textContent = this.address.slice(0, 6) + '...' + this.address.slice(-4);
+                    if (walletNetworkEl) walletNetworkEl.textContent = this.chainId === 42161 ? 'Arbitrum One' : (this.chainId === 421614 ? 'Arbitrum Sepolia' : 'Chain ' + this.chainId);
+                } else {
+                    if (statusIndicator) { statusIndicator.classList.remove('connected'); statusIndicator.classList.add('disconnected'); }
+                    if (statusText) statusText.textContent = 'Not Connected';
+                    if (connectBtn) { connectBtn.style.display = 'inline-block'; }
+                    if (walletInfo) walletInfo.style.display = 'none';
+                }
+            }
+        };
+        
+        document.getElementById('connectWalletBtn').addEventListener('click', function() { WalletManager.connectMetaMask(); });
+        document.getElementById('disconnectBtn').addEventListener('click', function() { WalletManager.disconnect(); });
+        
+        // Arbitrum chain IDs and params (official: https://docs.arbitrum.io/for-devs/dev-tools-and-resources/chain-info)
+        const ARBITRUM_MAINNET = 42161;
+        const ARBITRUM_SEPOLIA = 421614;
+        
+        const ARBITRUM_CHAIN_PARAMS = {
+            42161: {
+                chainId: '0x' + (42161).toString(16),
+                chainName: 'Arbitrum One',
+                nativeCurrency: { name: 'Ether', symbol: 'ETH', decimals: 18 },
+                rpcUrls: ['https://arb1.arbitrum.io/rpc'],
+                blockExplorerUrls: ['https://arbiscan.io', 'https://arbitrum.blockscout.com']
+            },
+            421614: {
+                chainId: '0x' + (421614).toString(16),
+                chainName: 'Arbitrum Sepolia',
+                nativeCurrency: { name: 'Ether', symbol: 'ETH', decimals: 18 },
+                rpcUrls: ['https://sepolia-rollup.arbitrum.io/rpc'],
+                blockExplorerUrls: ['https://sepolia.arbiscan.io', 'https://arbitrum-sepolia.blockscout.com']
+            }
+        };
+        
+        async function validateNetwork(selectedServer) {
+            const isTestnet = (selectedServer || '').toString().includes('testnet');
+            const requiredChainId = isTestnet ? ARBITRUM_SEPOLIA : ARBITRUM_MAINNET;
+            if (!WalletManager.chainId) return false;
+            if (WalletManager.chainId === requiredChainId) return true;
+            const networkName = isTestnet ? 'Arbitrum Sepolia' : 'Arbitrum One';
+            const shouldSwitch = confirm('Please switch to ' + networkName + '. Would you like to add the network and switch automatically?');
+            if (!shouldSwitch) return false;
+            const chainIdHex = '0x' + requiredChainId.toString(16);
+            try {
+                await window.ethereum.request({
+                    method: 'wallet_switchEthereumChain',
+                    params: [{ chainId: chainIdHex }]
+                });
+                WalletManager.chainId = requiredChainId;
+                WalletManager.updateUI();
+                return true;
+            } catch (err) {
+                var isUnrecognized = (err.code === 4902) || (err.message && err.message.indexOf('Unrecognized chain ID') !== -1);
+                if (isUnrecognized && ARBITRUM_CHAIN_PARAMS[requiredChainId]) {
+                    try {
+                        await window.ethereum.request({
+                            method: 'wallet_addEthereumChain',
+                            params: [ARBITRUM_CHAIN_PARAMS[requiredChainId]]
+                        });
+                        WalletManager.chainId = requiredChainId;
+                        WalletManager.updateUI();
+                        return true;
+                    } catch (addErr) {
+                        console.error('Add chain failed:', addErr);
+                        alert('Could not add ' + networkName + ': ' + (addErr.message || addErr));
+                        return false;
+                    }
+                }
+                console.error('Network switch failed:', err);
+                alert('Could not switch network: ' + (err.message || err));
+                return false;
+            }
+        }
+        
+        // Hyperliquid EIP-712 L1 action signing (matches Python SDK: sign_l1_action)
+        // Use wallet's active chainId in domain so MetaMask will sign (it requires domain.chainId === active chain).
+        const HyperliquidSigner = {
+            getL1Domain(chainId) {
+                return {
+                    name: 'Exchange',
+                    version: '1',
+                    chainId: chainId || 1337,
+                    verifyingContract: '0x0000000000000000000000000000000000000000'
+                };
+            },
+            AGENT_TYPES: {
+                Agent: [
+                    { name: 'source', type: 'string' },
+                    { name: 'connectionId', type: 'bytes32' }
+                ]
+            },
+            addressToBytes(address) {
+                const hex = (address || '').replace(/^0x/i, '');
+                if (hex.length !== 40) throw new Error('Invalid address length');
+                return ethers.utils.arrayify('0x' + hex);
+            },
+            canonicalAction(action) {
+                var t = action.type;
+                if (t === 'order') {
+                    var o = { type: t, orders: action.orders, grouping: action.grouping };
+                    if (action.builder) o.builder = action.builder;
+                    return o;
+                }
+                if (t === 'cancel' || t === 'cancelByCloid') return { type: t, cancels: action.cancels };
+                if (t === 'modify') return { type: t, oid: action.oid, order: action.order };
+                if (t === 'updateLeverage') return { type: t, asset: action.asset, isCross: action.isCross, leverage: action.leverage };
+                return action;
+            },
+            actionHash(action, vaultAddress, nonce, expiresAfter) {
+                const msgpackLib = typeof MessagePack !== 'undefined' ? MessagePack : (typeof msgpack !== 'undefined' ? msgpack : null);
+                if (!msgpackLib || !msgpackLib.encode) throw new Error('MessagePack not loaded. Refresh the page.');
+                const canonical = this.canonicalAction(action);
+                const actionBytes = msgpackLib.encode(canonical);
+                const parts = [actionBytes];
+                const nonceBuf = new ArrayBuffer(8);
+                new DataView(nonceBuf).setBigUint64(0, BigInt(nonce), false);
+                parts.push(new Uint8Array(nonceBuf));
+                if (!vaultAddress) {
+                    parts.push(new Uint8Array([0]));
+                } else {
+                    parts.push(new Uint8Array([1]));
+                    parts.push(this.addressToBytes(vaultAddress));
+                }
+                if (expiresAfter != null) {
+                    parts.push(new Uint8Array([0]));
+                    const expBuf = new ArrayBuffer(8);
+                    new DataView(expBuf).setBigUint64(0, BigInt(expiresAfter), false);
+                    parts.push(new Uint8Array(expBuf));
+                }
+                const totalLen = parts.reduce(function(acc, p) { return acc + p.length; }, 0);
+                const combined = new Uint8Array(totalLen);
+                let offset = 0;
+                parts.forEach(function(p) {
+                    combined.set(p, offset);
+                    offset += p.length;
+                });
+                return ethers.utils.keccak256(combined);
+            },
+            async signL1Action(signer, action, nonce, isMainnet, vaultAddress, expiresAfter, walletChainId) {
+                const hash = this.actionHash(action, vaultAddress || null, nonce, expiresAfter != null ? expiresAfter : undefined);
+                const phantomAgent = {
+                    source: isMainnet ? 'a' : 'b',
+                    connectionId: hash
+                };
+                var domain = this.getL1Domain(walletChainId);
+                try {
+                    const signature = await signer._signTypedData(
+                        domain,
+                        this.AGENT_TYPES,
+                        phantomAgent
+                    );
+                    const sig = ethers.utils.splitSignature(signature);
+                    return {
+                        r: sig.r,
+                        s: sig.s,
+                        v: sig.v
+                    };
+                } catch (error) {
+                    console.error('EIP-712 signing failed:', error);
+                    throw new Error(ErrorHandler.handleSigningError(error));
+                }
+            }
+        };
+        
         // Quick Tester Examples
         const testerExamples = {
             allMids: '{"type": "allMids"}',
@@ -395,7 +773,9 @@
             candles: `{\n  "type": "candleSnapshot",\n  "req": {\n    "coin": "BTC",\n    "interval": "15m",\n    "startTime": ${Date.now() - 86400000},\n    "endTime": ${Date.now()}\n  }\n}`,
             meta: '{"type": "meta"}',
             spotMeta: '{"type": "spotMeta"}',
-            openOrders: '{\n  "type": "openOrders",\n  "user": "0x0000000000000000000000000000000000000000"\n}'
+            openOrders: '{\n  "type": "openOrders",\n  "user": "0x0000000000000000000000000000000000000000"\n}',
+            placeOrder: '{\n  "action": {\n    "type": "order",\n    "orders": [{\n      "a": 0,\n      "b": true,\n      "p": "50000.0",\n      "s": "0.01",\n      "r": false,\n      "t": {"limit": {"tif": "Gtc"}}\n    }],\n    "grouping": "na"\n  }\n}',
+            cancelOrder: '{\n  "action": {\n    "type": "cancel",\n    "cancels": [{\n      "a": 0,\n      "o": 123456789\n    }]\n  }\n}'
         };
         
         function toggleQuickTester() {
@@ -436,31 +816,54 @@
             }
             
             try {
-                // Validate JSON
-                const body = JSON.parse(requestBody);
+                var body = JSON.parse(requestBody);
+                var isExchange = body && body.action;
+                var endpoint = isExchange ? '/exchange' : '/info';
                 
-                // Show loading
+                if (isExchange) {
+                    if (!WalletManager.signer) {
+                        alert('Trading operations require wallet connection. Please connect your wallet first.');
+                        return;
+                    }
+                    var valid = await validateNetwork(network);
+                    if (!valid) return;
+                }
+                
                 responseDiv.classList.add('visible');
-                responseDiv.textContent = '⏳ Sending request to ' + network + '...\n\n';
+                responseDiv.textContent = '⏳ Sending request to ' + network + endpoint + '...\n\n';
                 
-                // Make API request
-                const startTime = Date.now();
-                const response = await fetch(`${network}/info`, {
+                var payload = requestBody;
+                if (isExchange) {
+                    var nonce = Date.now();
+                    var isMainnet = network.indexOf('testnet') === -1;
+                    var signature = await HyperliquidSigner.signL1Action(
+                        WalletManager.signer,
+                        body.action,
+                        nonce,
+                        isMainnet,
+                        body.vaultAddress || null,
+                        body.expiresAfter != null ? body.expiresAfter : null,
+                        WalletManager.chainId
+                    );
+                    body.nonce = nonce;
+                    body.signature = signature;
+                    payload = JSON.stringify(body);
+                }
+                
+                var startTime = Date.now();
+                var response = await fetch(network + endpoint, {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: requestBody
+                    headers: { 'Content-Type': 'application/json' },
+                    body: payload
                 });
                 
-                const duration = Date.now() - startTime;
-                const data = await response.json();
+                var duration = Date.now() - startTime;
+                var data = await response.json();
                 
-                // Display response
-                let output = `✅ Response received in ${duration}ms\n\n`;
-                output += `Status: ${response.status} ${response.statusText}\n`;
-                output += `Endpoint: ${network}/info\n\n`;
-                output += `Response Body:\n`;
+                var output = '✅ Response received in ' + duration + 'ms\n\n';
+                output += 'Status: ' + response.status + ' ' + response.statusText + '\n';
+                output += 'Endpoint: ' + network + endpoint + '\n\n';
+                output += 'Response Body:\n';
                 output += JSON.stringify(data, null, 2);
                 
                 responseDiv.textContent = output;
@@ -468,19 +871,16 @@
                 
             } catch (error) {
                 responseDiv.classList.add('visible');
-                let errorMsg = `❌ Error: ${error.message}\n\n`;
+                var errorMsg = '❌ Error: ' + (error.message || error) + '\n\n';
                 
                 if (error instanceof SyntaxError) {
                     errorMsg += 'Please check that your request body is valid JSON.\n\n';
-                    errorMsg += 'Common issues:\n';
-                    errorMsg += '- Missing quotes around strings\n';
-                    errorMsg += '- Trailing commas\n';
-                    errorMsg += '- Unescaped characters\n';
+                    errorMsg += 'Common issues:\n- Missing quotes around strings\n- Trailing commas\n- Unescaped characters\n';
                 } else {
-                    errorMsg += 'Please check:\n';
-                    errorMsg += '- Network connection\n';
-                    errorMsg += '- API endpoint availability\n';
-                    errorMsg += '- Request format\n';
+                    errorMsg += 'Please check:\n- Network connection\n- API endpoint availability\n- Request format\n';
+                    try {
+                        if (requestBody && JSON.parse(requestBody).action) errorMsg += '- Wallet connected and correct network (Arbitrum)\n';
+                    } catch (e) {}
                 }
                 
                 responseDiv.textContent = errorMsg;
@@ -538,21 +938,45 @@
                 tagsSorter: 'alpha',
                 operationsSorter: 'alpha',
                 validatorUrl: null,
-                // Enable CORS for testing
-                requestInterceptor: (request) => {
-                    // Add CORS headers
-                    request.headers['Content-Type'] = 'application/json';
-                    
-                    // Log request for debugging
-                    console.log('API Request:', {
-                        url: request.url,
-                        method: request.method,
-                        headers: request.headers,
-                        body: request.body
-                    });
-                    
-                    return request;
-                },
+                requestInterceptor: (function() {
+                    return async function(request) {
+                        request.headers['Content-Type'] = 'application/json';
+                        
+                        if (request.url.indexOf('/exchange') !== -1 && request.body) {
+                            if (!WalletManager.signer) {
+                                alert('Please connect your wallet to test trading endpoints.');
+                                throw new Error('Wallet not connected');
+                            }
+                            try {
+                                var body = typeof request.body === 'string' ? JSON.parse(request.body) : request.body;
+                                var nonce = body.nonce != null ? body.nonce : Date.now();
+                                var isMainnet = request.url.indexOf('testnet') === -1;
+                                var vaultAddress = body.vaultAddress || null;
+                                var expiresAfter = body.expiresAfter != null ? body.expiresAfter : null;
+                                var signature = await HyperliquidSigner.signL1Action(
+                                    WalletManager.signer,
+                                    body.action,
+                                    nonce,
+                                    isMainnet,
+                                    vaultAddress,
+                                    expiresAfter,
+                                    WalletManager.chainId
+                                );
+                                body.nonce = nonce;
+                                body.signature = signature;
+                                request.body = JSON.stringify(body);
+                                console.log('Signed exchange request');
+                            } catch (err) {
+                                console.error('Failed to sign request:', err);
+                                alert('Failed to sign: ' + (err.message || err));
+                                throw err;
+                            }
+                        }
+                        
+                        console.log('API Request:', { url: request.url, method: request.method });
+                        return request;
+                    };
+                })(),
                 responseInterceptor: (response) => {
                     // Log response for debugging
                     console.log('API Response:', {

@@ -30,10 +30,11 @@ Your Hyperliquid API documentation now includes **three powerful ways** to test 
 ### Option 2: Swagger UI (Most Interactive)
 **URL**: https://bowen31337.github.io/hyperliquid-openapi/swagger.html
 
-**Best for**: Exploring all endpoints with full interactivity
+**Best for**: Exploring all endpoints with full interactivity, including trading with wallet auth
 
 **Features**:
 - ✅ "Try it out" on every endpoint
+- ✅ **Wallet connect** for trading (place/cancel order) with EIP-712 signing
 - ✅ Auto-generated request examples
 - ✅ Schema validation
 - ✅ Response visualization
@@ -127,13 +128,21 @@ These endpoints work immediately - just click and test!
   }
   ```
 
-### 🔐 Trading Endpoints (Requires Signature)
+### 🔐 Trading Endpoints (Wallet or SDK)
 
-Trading operations require EIP-712 signatures and **cannot be tested directly in the browser** without your private key.
+Trading operations require EIP-712 signatures. You can test them in the browser **without entering your private key** by connecting your wallet in Swagger UI.
 
-**⚠️ Important**: Never enter your private key in a web browser!
+#### Option A: Test in Swagger UI (Wallet Connect)
 
-#### Recommended Approach: Use Official SDKs
+1. Open [Swagger UI](https://bowen31337.github.io/hyperliquid-openapi/swagger.html).
+2. Click **Connect Wallet** and connect MetaMask (or another Web3 wallet).
+3. Switch to **Arbitrum One** (Mainnet) or **Arbitrum Sepolia** (Testnet) if prompted.
+4. In **Quick Tester**, select "Place Order (requires wallet)" or "Cancel Order (requires wallet)", or use **Try it out** on `POST /exchange`.
+5. Click **Send Request** (or **Execute**); your wallet will prompt you to sign. After signing, the request is sent with the signature.
+
+Your private keys never leave your wallet; you approve each transaction in the wallet.
+
+#### Option B: Use Official SDKs (Programmatic)
 
 **Python SDK**:
 ```python

@@ -108,6 +108,18 @@ Real-time data streams:
 
 Trading operations require EIP-712 signatures. See the [official documentation](https://hyperliquid.gitbook.io/hyperliquid-docs/for-developers/api/signing) for signing details.
 
+### Wallet Authentication (Swagger UI)
+
+You can **test trading endpoints** (place order, cancel order, etc.) directly in Swagger UI using your Web3 wallet:
+
+1. Open [Swagger UI](https://bowen31337.github.io/hyperliquid-openapi/swagger.html).
+2. Click **Connect Wallet** and approve MetaMask (or any WalletConnect-compatible wallet).
+3. Ensure your wallet is on **Arbitrum One** (Mainnet) or **Arbitrum Sepolia** (Testnet); the page can prompt to switch.
+4. Use **Quick Tester** or **Try it out** on `POST /exchange`; requests are signed with EIP-712 and sent automatically.
+5. Your private keys never leave your wallet; you approve each signature in the wallet.
+
+Supported: MetaMask and other wallets that inject `window.ethereum`. Network validation and auto-switch for Arbitrum are included.
+
 ## 📚 SDKs
 
 Official and community SDKs:
